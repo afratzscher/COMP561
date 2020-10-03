@@ -61,68 +61,30 @@ def align(seqs, match, mismatch, pen):
 	# start traceback
 	S_prime = [[]]
 	T_prime = [[]]
-	# S_prime = np.zeros((m+1, n+1), dtype=object)
-	# T_prime = np.zeros((m+1, n+1), dtype=object)
-	# # S_prime[0][1] = 'AT'
-	# # print(S_prime)
-	# # S_prime[0][1] = 'T' + S_prime[0][1]
-	# # print(S_prime)
-
-	# stopped = []
 	pointercopy = pointer.copy()
-	# print(pointer)
-	# num = 0
-	# stopped.append((m,n))
-	# loop = 1
-	# flag = 0
-	# while num > -1:
-	# 	i = stopped[num][0]
-	# 	j = stopped[num][1]
-	# 	print(i,j)
-	# 	while (i > 0 or j > 0):
-	# 		repeats = len(pointer[i,j])
-	# 		if (repeats > 1):
-	# 			S_prime.append(S_prime[num].copy())
-	# 			T_prime.append(T_prime[num].copy())
-	# 			num += 1
-	# 			print(num)
-	# 			stopped.append((i, j))
-	# 			print(stopped)
-	# 			move = pointer[i,j][-1]
-	# 			pointer[i,j] = pointer[i,j][:-1]
-	# 		else:
-	# 			move = pointer[i,j]
-	# 		if move == 'D':
-	# 			S_prime[num].insert(0, S[i-1])
-	# 			T_prime[num].insert(0, T[j-1])
-	# 			i -= 1
-	# 			j -= 1
-	# 		elif move == 'L':
-	# 			S_prime[num].insert(0, "-")
-	# 			T_prime[num].insert(0, T[j-1])
-	# 			j -= 1
-	# 		elif move == 'U':
-	# 			S_prime[num].insert(0, S[i-1])
-	# 			T_prime[num].insert(0, "-")
-	# 			i -= 1
-	# 	num -= 1
 
-	iters = 0
+	iters = 1
+	num = 0 
+	prev = []
+	branch = []
 	newFlag = False
-	num = 0
-	while iters >= 0:
-		if num != 0:
+	while iters > 0:
+		if num != 0: # add new list for new branch
 			S_prime.append([])
 			T_prime.append([])
 			newFlag = True
 		i = m
 		j = n
+		# do for each branch
 		while (i > 0 or j > 0):
 			if (len(pointer[i,j]) > 1):
 				iters += len(pointer[i,j]) - 1
-			if (len(pointer[i,j]) == 0):
-				pointer[i,j] = pointercopy[i,j]
-			move = pointer[i,j][-1]
+				branch.append((i,j))
+				move = pointer[i,j][-1]
+			else:
+				if (len(pointer[i,j]) == 0):
+					pointer[i,j] = pointercopy[i,j][0]
+				move = pointer[i,j]
 			if move == 'D':
 				if newFlag:
 					S_prime[num].append(S[i-1])
@@ -131,7 +93,6 @@ def align(seqs, match, mismatch, pen):
 				else:
 					S_prime[num].insert(0, S[i-1])
 					T_prime[num].insert(0, T[j-1])	
-				pointer[i,j] = pointer[i,j][:-1]
 				i -= 1
 				j -= 1
 			elif move == 'L':
@@ -142,7 +103,6 @@ def align(seqs, match, mismatch, pen):
 				else:
 					S_prime[num].insert(0, "-")
 					T_prime[num].insert(0, T[j-1])
-				pointer[i,j] = pointer[i,j][:-1]
 				j -= 1
 			elif move == 'U':
 				if newFlag:
@@ -152,18 +112,25 @@ def align(seqs, match, mismatch, pen):
 				else:
 					S_prime[num].insert(0, S[i-1])
 					T_prime[num].insert(0, "-")
-				pointer[i,j] = pointer[i,j][:-1]
 				i -= 1
 		iters -=1
 		num+=1
+
+		if branch:
+			if prev:
+				if prev[-1] < branch[-1]:
+					pointer[prev[-1][0], prev[-1][1]] = pointercopy[prev[-1][0], prev[-1][1]]
+					prev = prev[:-1]
+			pointer[branch[-1][0], branch[-1][1]] = pointer[branch[-1][0], branch[-1][1]][:-1]
+			prev.append(branch[-1])
+			branch = branch[:-1]
 		
-	
-	
+		if pointer[m,n] == '':
+			break
+
 	for k in range(0, len(S_prime)):
-		print ("S': ", S_prime[k])
-		print(len(S_prime[k]))
-		print("T': ", T_prime[k])
-		print(len(T_prime[k]))
+		print(S_prime[k])
+		print(T_prime[k])
 		print("SCORE: ",  X[m,n])
 		print("\n")
 
@@ -178,4 +145,4 @@ def main(argv):
 
 if __name__ == '__main__':
 	# main(sys.argv[1:])
-	main(['test3.fa', '1', '-1', '1'])
+	main(['hw1_long.fa', '1', '-1', '1'])
