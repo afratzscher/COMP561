@@ -59,13 +59,26 @@ def align(seqs, match, mismatch, pen):
 				diag += match
 			else:
 				diag += mismatch
+
 			maxval = max(diag, X[i][j-1] + pen, X[i-1][j] + pen)
+
 			if maxval == diag:
 				pointer[i,j] = (pointer[i,j]+("D"))
 			if maxval == (X[i][j-1] + pen):
-				pointer[i,j] = (pointer[i,j]+("L"))
+				# if previous cell has only L, dont add L
+				if not (pointer[i][j-1] == "L"):
+					pointer[i,j] = (pointer[i,j]+("L"))
+				else: 
+					if not ("D" in pointer[i,j]):
+						pointer[i,j] = (pointer[i,j]+("D"))
+					maxval = diag
 			if maxval == (X[i-1][j] + pen):
-				pointer[i,j] = (pointer[i,j]+("U"))
+				if not (pointer[i-1][j] == "U"):
+					pointer[i,j] = (pointer[i,j]+("U"))
+				else: 
+					if not ("D" in pointer[i,j]):
+						pointer[i,j] = (pointer[i,j]+("D"))
+					maxval = diag
 			X[i,j] = maxval
 	
 	# start traceback
@@ -186,4 +199,4 @@ def main(argv):
 
 if __name__ == '__main__':
 	# main(sys.argv[1:])
-	main(['long2.fa', '1', '-1', '-1'])
+	main(['hw1_shortn.fa', '1', '-1', '-1'])

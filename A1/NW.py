@@ -145,4 +145,4 @@ def main(argv):
 
 if __name__ == '__main__':
 	# main(sys.argv[1:])
-	main(['long2.fa', '1', '-1', '1'])
+	main(['q6.fa', '1', '-1', '1'])
