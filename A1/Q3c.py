@@ -1,8 +1,11 @@
+# Name: Anne-Sophie Fratzscher
+# ID: 260705446
+# Assignment 1 COMP561
 '''
-FILE: NW.py
-PURPOSE: practice implementing N-W pairwise sequence alignment algo
-INPUT: none
-OUTPUT: none
+FILE: Q3c.py
+PURPOSE: implementing
+INPUT: file name, match score, mismatch score, gap penalty c (as negative number)
+OUTPUT: one of the optimal alignments (S' and T') and score
 USAGE: python3 NW.py hw1_long.fa 1 -1 -1
 '''
 import sys
@@ -101,15 +104,26 @@ def align(seqs, match, mismatch, pen):
 		lastS = ''
 		lastT = ''
 		# do for each branch
+		others = ''
 		while (i > 0 or j > 0):
+			if (len(pointer[i,j]) == 0):
+				if not others: # if previous move had other options
+					S_prime[num] = ""
+					T_prime[num] = ""
+					iters +=1
+					num-=1
+				else:
+					S_prime[num] = ""
+					T_prime[num] = ""
+					break; # means all options exhausted -> no other path to 0
 			if (len(pointer[i,j]) > 1):
 				iters += len(pointer[i,j]) - 1
 				branch.append((i,j))
+				others = pointer[i,j][:-1]
 				move = pointer[i,j][-1]
 			else:
-				if (len(pointer[i,j]) == 0):
-					pointer[i,j] = pointercopy[i,j][0]
 				move = pointer[i,j]
+				others = move
 			if move == 'D':
 				if newFlag:
 					S_prime[num] = S[i-1] + S_prime[num]
@@ -180,7 +194,7 @@ def align(seqs, match, mismatch, pen):
 		if pointer[m,n] == '':
 			break
 
-	# if want to print all
+	# # if want to print all
 	# for k in range(0, len(S_prime)):
 	# 	if not (S_prime[k] == ''):
 	# 		print("S': ", S_prime[k])
@@ -198,5 +212,5 @@ def main(argv):
 	print("DONE")
 
 if __name__ == '__main__':
-	# main(sys.argv[1:])
-	main(['hw1_shortn.fa', '1', '-1', '-1'])
+	main(sys.argv[1:]) # if run from command line
+	# main(['hw1_long.fa', '1', '-1', '-1']) # if run from interpreter
