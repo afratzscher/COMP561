@@ -56,7 +56,7 @@ def align(seqs, match, mismatch, pen):
 			if maxval == (X[i-1][j] - pen):
 				pointer[i,j] = (pointer[i,j]+("U"))
 			X[i,j] = maxval
-	
+			
 	# start traceback
 	S_prime = ['']
 	T_prime = ['']
@@ -145,4 +145,4 @@ def main(argv):
 
 if __name__ == '__main__':
 	# main(sys.argv[1:])
-	main(['q6.fa', '1', '-1', '1'])
+	main(['test3.fa', '1', '-1', '1'])
