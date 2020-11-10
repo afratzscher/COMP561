@@ -70,9 +70,9 @@ def readanno(file):
 	avginter = intersum/intercount
 	avggene = genesum/genecount
 
-	with open('q1a.txt', 'w') as f:
-		print('Average intergenic length: ', avginter, file = f)
-		print('Average genic length: ', avggene, file = f)
+	with open('configuration.txt', 'w') as f:
+		print(avginter, file = f)
+		print(avggene, file = f)
 	f.close()
 	
 	return lengthdict, annodict
@@ -95,15 +95,23 @@ def readseq(file):
 				seqdict[num] = data
 	return seqdict
 
-def freq(annodict, seqdict):
+def freq(annodict, seqdict, lengthdict):
 	genedict = {new_list: '' for new_list in range(1, len(annodict)+1)} 
+	interdict = {new_list: '' for new_list in range(1, len(annodict)+1)} 
 
-	#extract genic regions
+	#split into inter and genic regions
 	for i in range(1, len(genedict)+1):
 		for k in range(0, len(annodict[i])):
 			start = annodict[i][k][0] - 1 #because first idx = 0
 			end = annodict[i][k][1] - 1 #because first idx = 0
+		if annodict[i]:
 			genedict[i] = genedict[i] + (seqdict[i][start:end])
+			if k == 0:
+				interdict[i] = interdict[i] + (seqdict[i][0:start])
+			else:
+				interdict[i] = interdict[i] + (seqdict[i][annodict[i][k-1][1]-1:start])
+			if k == len(annodict[i])-1:
+				interdict[i] = interdict[i] + (seqdict[i][end:lengthdict[i]])
 
 	#initializing dictionaries
 	nt = {'A': 0, 'T': 0, 'C': 0, 'G': 0}
@@ -119,10 +127,6 @@ def freq(annodict, seqdict):
 
 	#get codon and nt freq
 	for i in range(1, len(genedict)+1):
-		nt['A'] += genedict[i].count('A')
-		nt['C'] += genedict[i].count('C')
-		nt['G'] += genedict[i].count('G')
-		nt['T'] += genedict[i].count('T')
 		k = 0
 		while k < len(genedict[i]) and len(genedict[i][k:k+3]) == 3:
 			if k == 0:
@@ -131,21 +135,28 @@ def freq(annodict, seqdict):
 					startcodons.append(triplet)
 			codons[genedict[i][k:k+3]] += 1
 			k+=3
-	print(startcodons)
 
-	with open('q1a.txt', 'a') as f:
-		print('Nucleotide frequency: ', nt, file = f)
-		print('Codon frequency: ', codons, file = f)
+	# get nt frequency
+	for i in range(1, len(interdict)+1):
+		nt['A'] += interdict[i].count('A')
+		nt['C'] += interdict[i].count('C')
+		nt['G'] += interdict[i].count('G')
+		nt['T'] += interdict[i].count('T')
+
+	with open('configuration.txt', 'a') as f:
+		print(nt, file = f)
+		print(codons, file = f)
+		print(startcodons, file = f)
 	f.close()
+	return
 
 def main(argv):
 	anno = argv[0]
 	seq = argv[1]
 	lengthdict, annodict = readanno(anno)
 	seqdict = readseq(seq)
-	freq(annodict, seqdict)
+	freq(annodict, seqdict, lengthdict)
 
 if __name__ == '__main__':
 	# main(sys.argv[1:])
-	# main(['test2.gff3', 'Vibrio_cholerae.GFC_11.dna.toplevel.fa'])
 	main(['Vibrio_cholerae.GFC_11.37.gff3', 'Vibrio_cholerae.GFC_11.dna.toplevel.fa'])

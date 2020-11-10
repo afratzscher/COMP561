@@ -33,7 +33,7 @@ def read_config_anno(anno):
 		while not (anno_data[line_index].startswith('###') and anno_data[line_index+2].startswith('###')):
 			#if at the beginning of current segment, record the data
 			current_line = anno_data[line_index].split()
-			if anno_data[line_index-1].startswith('###') and current_line[6] == '+':
+			if anno_data[line_index-1].startswith('###') and current_line[6] == '+' and current_line[2] == 'CDS':
 				segment = (int(current_line[3]), int(current_line[4]))
 				current_seq.append(segment)
 			line_index += 1
@@ -45,7 +45,88 @@ def read_config_anno(anno):
 	for anno in anno_dict:
 		seg_count += len(anno_dict[anno])
 
-	return anno_dict, seq_length_sum, seg_count
+	
+	lengthsum = 0
+	lengthdict = {}
+	start = 0;
+	for line in anno_data:
+		if "sequence-region" in line:
+			data = line.strip().split()
+			num = int(data[1][11:].lstrip("0"))
+			lengthdict[num] = int(data[3])
+			lengthsum += int(data[3])
+		start += 1
+		if "#!" in line:
+			break
+
+	# assumes only keep if CDS AND on + strand
+	annodict = {new_list: [] for new_list in range(1, len(lengthdict)+1)} 
+	idx = 0
+	genesum = 0
+	intercount = 0
+	for line in anno_data:
+		if not "#!" in line and idx > start:
+			if not "###" in line:
+				data = line.strip().split()
+				if data[3] != 'Archive':
+					if data[2] == 'CDS' and data[6] == '+':
+						num = int(data[0][11:].lstrip("0"))
+						start_end = (int(data[3]), int(data[4]))
+						seq = annodict[num]
+						#if overlap, consider as SINGLE gene
+						# if annodict[num]:
+						# 	prev = annodict[num][-1]
+						# 	if (prev[1] > start_end[0]):
+						# 		annodict[num][-1] = (prev[0], start_end[1])
+						# 		# allseq = annodict[num]
+						# 		# allseq[-1][1] = start_end[1]
+						# 		# annodict[num] = allseq
+						# 	else:
+						# 		annodict[num].append(start_end)
+						# else:
+						annodict[num].append(start_end)
+		idx+=1
+
+	for i in annodict:
+		if annodict[i]:
+			# check start -> add inter after if no gene at start
+			if (annodict[i][0][0]) != 1:
+				intercount += 1
+			# check end -> add inter after if no gene at end
+			if (annodict[i][-1][1]) != lengthdict[i]:
+				intercount+=1
+			intercount += len(annodict[i]) - 1
+
+			for k in annodict[i]:
+				genesum += (k[1] - k[0] + 1)
+		else:
+			intercount += 1
+
+	intersum = lengthsum - genesum
+
+	genecount = 0
+	for anno in annodict:
+		genecount += len(annodict[anno])
+
+	avginter = intersum/intercount
+	avggene = genesum/genecount
+
+	segcount = 0 
+	for anno in annodict:
+		segcount += len(annodict[anno])
+	
+	##compared
+	print('here')
+	diff = {}
+	for key in annodict:
+		if (key in anno_dict and annodict[key] != anno_dict[key]):
+			diff[key] = annodict[key]
+	print(diff)
+
+	print('MINE', annodict[118])
+	print(anno_dict[118])
+
+	return lengthdict, annodict, seg_count
 
 def read_config_seq(seq):
 	#open and read the sequence file
@@ -167,9 +248,9 @@ def main(argv):
 	seq = argv[1]
 	anno_dict, seq_length_sum, seg_count = read_config_anno(anno)
 	seq_dict = read_config_seq(seq)
-	write_config(anno_dict, seq_length_sum, seg_count, seq_dict)
-	i_to_s_prob, m_to_t_prob, inter_nuc_prob, gene_codon_prob = read_config()
-	seq_list, seq_name_list = read_seq()
+	# write_config(anno_dict, seq_length_sum, seg_count, seq_dict)
+	# i_to_s_prob, m_to_t_prob, inter_nuc_prob, gene_codon_prob = read_config()
+	# seq_list, seq_name_list = read_seq()
 
 if __name__ == '__main__':
 	# main(sys.argv[1:])
