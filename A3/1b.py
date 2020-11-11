@@ -17,13 +17,15 @@ def getseq(seq):
 	seqfile = open(seq, "r")
 	lines = seqfile.readlines()
 
+
 	num = 0
 	seqdict = {}
 	idx = 0
 	for line in lines:
 		if ">" in line:
 			data = line.strip().split()
-			num = int(data[0][12:].lstrip("0"))
+			# num = int(data[0][12:].lstrip("0"))
+			num = int(data[0][8:].lstrip("0"))
 			config.__NAMES__.append(data[0][1:])
 		else:
 			data = line.strip('\n')
@@ -60,8 +62,6 @@ def getProbTables():
 
 def viterbi(iter):
 	seq = config.__SEQ__[iter]
-	# seq = 'ACATGACGGGATAGGTTGAAATTAGGACGTGGATTGAACT'
-	# seq = 'AATGAAATTAG'
 	seq = ' ' + seq
 	states = ['I', 'A', 'G', 'Z']
 	tb = np.zeros((4, len(seq)))
@@ -73,6 +73,7 @@ def viterbi(iter):
 
 	codon = False
 	stop = False
+	end = False
 	i = 1
 	prev = 'I'
 	while i < len(seq):
@@ -81,7 +82,7 @@ def viterbi(iter):
 				curr = states[k]
 				if seq[i:i+3] in config.__STARTCODON__:
 					codon = True
-				if seq[i:i+3] in config.__STOPCODONS__ and (not stop):
+				if seq[i:i+3] in config.__STOPCODONS__ and (codon):
 					stop = True
 				probtb = {'I': 0, 'A': 0, 'G': 0, 'Z': 0}
 				for j in range(0, len(states)):
@@ -104,15 +105,19 @@ def viterbi(iter):
 								else:
 									prob = tb[j,i-1] * emitprob[seq[i:i+3]] * config.__TRANSPROB__[(prevstate, curr)]
 							else:
-								if (len(seq[i:i+3]) != 3):
-									prob = tb[j,i-1]
-								else:
+								if (len(seq[i:i+3]) == 3):
 									prob = tb[j,i-1] * emitprob[seq[i:i+3]] * config.__TRANSPROB__[(prevstate, curr)]
+								else:
+									end = True
 					else:
 						if curr == 'I':
 							prob = tb[j,i-1] * emitprob[seq[i]] * config.__TRANSPROB__[(prevstate, curr)]
 						else:
-							prob = 0
+							if (len(seq[i:i+3]) == 3):
+									prob = tb[j,i-1] * emitprob[seq[i:i+3]] * config.__TRANSPROB__[(prevstate, curr)]
+							else:
+								end = True
+
 					if prob > probtb[curr]:
 						probtb[curr] = prob
 
@@ -120,6 +125,10 @@ def viterbi(iter):
 				if max(probtb.values()) == 0:
 					maxst = ''
 				if codon:
+					if end:
+						pointer[2, i:i+3] = 'G'
+					if i == len(seq)-1:
+						pointer[2, i:i+3] = 'G'
 					if maxst != '':
 						pointer[k, i] = prev
 						pointer[k, i+1:i+3] = maxst
@@ -127,6 +136,8 @@ def viterbi(iter):
 					tb[k, i:i+3] = probtb[curr]
 
 				else:
+					if end:
+						pointer[2, i:i+3] = 'G'
 					tb[k, i] = probtb[curr]
 					if maxst != '':
 						pointer[k, i] = prev
@@ -139,30 +150,37 @@ def viterbi(iter):
 				codon = False
 		else:
 			i+=1
-			
+	
 	assignment = traceback(tb, iter, pointer)
 
 def traceback(tb, iter, pointer):
 	states = ['I', 'A', 'G', 'Z']
-	idx = np.argmax(tb[:,-1], axis = 0)
-	path = ''
-	i = tb.shape[1] - 1
-	while i >= 0:
-		path += states[idx]
-		prev = pointer[idx, i]
-		if prev == 'I':
-			idx = 0
-		elif prev == 'A':
-			idx = 1
-		elif prev == 'G':
-			idx = 2
-		elif prev == 'Z':
-			idx = 3
-		i-=1
-	path = (path[::-1])[1:]
-	
+	indices = np.argwhere(tb[:,-1] == np.amax(tb[:,-1])).flatten().tolist()
+	check = False
+	for idx in indices:
+		if pointer[idx,-1] == '':
+			idx +=1
+		else:
+			path = ''
+			i = tb.shape[1] - 1
+			while i >= 0:
+				path += states[idx]
+				curr = pointer[idx, i]
+				if curr == 'I':
+					idx = 0
+				elif curr == 'A':
+					idx = 1
+				elif curr == 'G':
+					idx = 2
+				elif curr == 'Z':
+					idx = 3
+				i-=1
+			path = (path[::-1])[1:]
+			break
+
 	i = 0
 	pts = []
+
 	while i < len(path):
 		if path[i] != 'I':
 			start = i
@@ -172,7 +190,6 @@ def traceback(tb, iter, pointer):
 			i+=1
 		else:
 			i+=1
-		
 
 	idx = np.argmax(tb, axis = 0)
 	i = 0
@@ -204,6 +221,7 @@ def main(argv):
 	for i in range(1, len(config.__SEQ__)+1):
 		viterbi(i)
 		print('end iter ', i)
+		
 
 if __name__ == '__main__':
 	# main(sys.argv[1:])

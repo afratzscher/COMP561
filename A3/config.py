@@ -11,4 +11,4 @@ __INTEREMIT__ = {}
 __STARTEMIT__ = {}
 __GENEEMIT__ = {}
 __STOPEMIT__ = {}
-__STOPCODONS__ = ['TAG', 'TTA', 'TGA']
+__STOPCODONS__ = ['TAG', 'TAA', 'TGA']
