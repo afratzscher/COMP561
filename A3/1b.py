@@ -19,13 +19,11 @@ def getseq(seq):
 	seqfile = open(seq, "r")
 	lines = seqfile.readlines()
 
-
 	seqdict = {}
 	idx = -1
 	for line in lines:
 		if ">" in line:
 			data = line.strip().split()
-			# num = int(data[0][8:].lstrip("0"))
 			config.__NAMES__.append(data[0][1:])
 			idx+=1
 		else:
@@ -159,7 +157,7 @@ def traceback(path, currprob, it):
 	with open('1c.gff3', 'a') as f:
 		print('###', file = f)
 		for i in pts:
-			print("%-20s %-5s %-5s %-5d %-5d %-5s %-5s %-5s %-5s" %(config.__NAMES__[it-1], 'ena', 'CDS', i[0]+1, i[1]+1, '.', '+', '0', '.'), file = f)
+			print("%-20s %-5s %-5s %-5d %-5d %-5s %-5s %-5s %-5s" %(config.__NAMES__[it], 'ena', 'CDS', i[0]+1, i[1]+1, '.', '+', '0', '.'), file = f)
 	f.close()
 
 def main(argv):
@@ -168,10 +166,9 @@ def main(argv):
 	getconfigs(conf)
 	getseq(seq)
 	getProbTables()
-	for i in range(1, len(config.__SEQ__)+1):
+	for i in range(len(config.__SEQ__)):
 		viterbi(i)
 		print('end iter ', i)
-		break
 
 if __name__ == '__main__':
 	# main(sys.argv[1:])

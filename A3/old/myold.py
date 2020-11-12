@@ -227,7 +227,7 @@ def traceback(tb, iter, pointer):
 
 
 	print(pts)
-	with open('1c.gff3', 'a') as f:
+	with open('test.gff3', 'a') as f:
 		print('###', file = f)
 		for i in pts:
 			print("%-20s %-5s %-5s %-5d %-5d %-5s %-5s %-5s" %(config.__NAMES__[iter-1], 'ena', 'CDS', i[0], i[1], '.', '+', '0'), file = f)
@@ -240,10 +240,10 @@ def main(argv):
 	getseq(seq)
 	getProbTables()
 
-	for i in range(1, len(config.__SEQ__)+1):
+	for i in range(len(config.__SEQ__)):
 		viterbi(i)
-		print('end iter ', i)
-		break		
+		print('end iter ', i)	
+		break
 
 if __name__ == '__main__':
 	# main(sys.argv[1:])

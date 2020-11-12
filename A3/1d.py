@@ -70,98 +70,153 @@ def readmyanno(file, names):
 		idx+=1
 	return annodict
 
-def compareannomy(anno_dict, my_anno_dict, seq_name_list):
-	perfect_anno_dict = {}
-	start_anno_dict = {}
-	end_anno_dict = {}
-	neither_anno_dict = {}
-	for name in seq_name_list:
-		perfect_anno_dict[name] = []
-		start_anno_dict[name] = []
-		end_anno_dict[name] = []
-		neither_anno_dict[name] = []
+def fractionanno(annodict, mydict, names):
+	perfect = {}
+	start = {}
+	end = {}
+	neither = {}
+	numgenes = 0
+	numperfect = 0
+	numstart = 0
+	numend = 0
+	numneither = 0
 
-	for seq_name in anno_dict:
-		for gene in anno_dict[seq_name]:
-			#1.perfectly match
-			if gene in my_anno_dict[seq_name]:
-				perfect_anno_dict[seq_name].append(gene)
-			elif gene[0] in [i[0] for i in my_anno_dict[seq_name]]:
-				start_anno_dict[seq_name].append(gene)
-			elif gene[1] in [i[1] for i in my_anno_dict[seq_name]]:
-				end_anno_dict[seq_name].append(gene)
+	for name in names:
+		for i in annodict[name]:
+			numgenes+=1
+			if i in mydict[name]:
+				if name in perfect:
+					perfect[name].append(i)
+				else:
+					perfect[name] = [i]
+				numperfect+=1
+			elif i[0] in (i[0] for i in mydict[name]):
+				if name in start:
+					start[name].append(i)
+				else:
+					start[name] = [i]
+				numstart+=1
+			elif i[1] in (i[1] for i in mydict[name]):
+				if name in end:
+					end[name].append(i)
+				else:
+					end[name] = [i]
+				numend+=1
 			else:
-				neither_anno_dict[seq_name].append(gene)
+				if name in neither:
+					neither[name].append(i)
+				else:
+					neither[name] = [i]
+				numneither+=1
+	
+	with open('fractionanno.gff3', 'a') as f:
+		print('STATISTICS FOR ANNOTATED GENES: ', file = f)
+		print('\ttotal genes: ', numgenes, file = f)
+		print('\tperfect: {:.0%}'.format(numperfect/numgenes), file = f)
+		print('\tstart only: {:.0%}'.format(numstart/numgenes), file = f)
+		print('\tend only: {:.0%}'.format(numend/numgenes), file = f)
+		print('\tneither: {:.0%}'.format(numneither/numgenes), file = f)
+		print('The fraction of annotated genes on the positive strand that:', file = f)
+		print('###Perfectly match predicted gene###', file = f)
+		for name in names:
+			if name in perfect:
+				for i in perfect[name]:
+					print("%-20s %-5s %-5s %-5d %-5d %-5s %-5s %-5s %-5s" %(name, 'ena', 'CDS', i[0], i[1], '.', '+', '0', '.'), file = f)
+		print('###Start only matches predicted gene###', file = f)
+		for name in names:
+			if name in start:
+				for i in start[name]:
+					print("%-20s %-5s %-5s %-5d %-5d %-5s %-5s %-5s %-5s" %(name, 'ena', 'CDS', i[0], i[1], '.', '+', '0', '.'), file = f)
+		print('###End only matches predicted gene###', file = f)
+		for name in names:
+			if name in end:
+				for i in end[name]:
+					print("%-20s %-5s %-5s %-5d %-5d %-5s %-5s %-5s %-5s" %(name, 'ena', 'CDS', i[0], i[1], '.', '+', '0', '.'), file = f)
+		print('###No match for predicted gene###', file = f)
+		for name in names:
+			if name in neither:
+				for i in neither[name]:
+					print("%-20s %-5s %-5s %-5d %-5d %-5s %-5s %-5s %-5s" %(name, 'ena', 'CDS', i[0], i[1], '.', '+', '0', '.'), file = f)
+		print('###', file = f)
+	f.close()
 
-	result_file = open('fraction_anno.gff3', 'w')
-	result_file.write('###  Perfectly match both ends of one of my predicted genes\n')
-	for seq_name in anno_dict:
-		for gene in perfect_anno_dict[seq_name]:
-			result_file.write(seq_name+'\t ena\t CDS \t {}\t {}\t . \t +\t 0\t .\n'.format(gene[0], gene[1]))
-	result_file.write('###  Match the start but not the end of a predicted gene\n')
-	for seq_name in anno_dict:
-		for gene in start_anno_dict[seq_name]:
-			result_file.write(seq_name+'\t ena\t CDS \t {}\t {}\t . \t +\t 0\t .\n'.format(gene[0], gene[1]))
-	result_file.write('###  Match the end but not the start of a predicted gene\n')
-	for seq_name in anno_dict:
-		for gene in end_anno_dict[seq_name]:
-			result_file.write(seq_name+'\t ena\t CDS \t {}\t {}\t . \t +\t 0\t .\n'.format(gene[0], gene[1]))
-	result_file.write('###  Do not match neither the start not the end of a predicted gene\n')
-	for seq_name in anno_dict:
-		for gene in neither_anno_dict[seq_name]:
-			result_file.write(seq_name+'\t ena\t CDS \t {}\t {}\t . \t +\t 0\t .\n'.format(gene[0], gene[1]))
-	result_file.close()
+def fractionpred(annodict, mydict, names):
+	perfect = {}
+	start = {}
+	end = {}
+	neither = {}
+	numgenes = 0
+	numperfect = 0
+	numstart = 0
+	numend = 0
+	numneither = 0
 
-def report_my_anno(anno_dict, my_anno_dict, seq_name_list):
-	perfect_anno_dict = {}
-	start_anno_dict = {}
-	end_anno_dict = {}
-	neither_anno_dict = {}
-	for name in seq_name_list:
-		perfect_anno_dict[name] = []
-		start_anno_dict[name] = []
-		end_anno_dict[name] = []
-		neither_anno_dict[name] = []
-
-	for seq_name in my_anno_dict:
-		for gene in my_anno_dict[seq_name]:
-			#1.perfectly match
-			if gene in anno_dict[seq_name]:
-				perfect_anno_dict[seq_name].append(gene)
-			elif gene[0] in [i[0] for i in anno_dict[seq_name]]:
-				start_anno_dict[seq_name].append(gene)
-			elif gene[1] in [i[1] for i in anno_dict[seq_name]]:
-				end_anno_dict[seq_name].append(gene)
+	for name in names:
+		for i in mydict[name]:
+			numgenes+=1
+			if i in annodict[name]:
+				if name in perfect:
+					perfect[name].append(i)
+				else:
+					perfect[name] = [i]
+				numperfect+=1
+			elif i[0] in (i[0] for i in annodict[name]):
+				if name in start:
+					start[name].append(i)
+				else:
+					start[name] = [i]
+				numstart+=1
+			elif i[1] in (i[1] for i in annodict[name]):
+				if name in end:
+					end[name].append(i)
+				else:
+					end[name] = [i]
+				numend+=1
 			else:
-				neither_anno_dict[seq_name].append(gene)
-
-	result_file = open('my_fraction_anno.gff3', 'w')
-	result_file.write('###  Perfectly match both ends of one of my predicted genes\n')
-	for seq_name in anno_dict:
-		for gene in perfect_anno_dict[seq_name]:
-			result_file.write(seq_name+'\t ena\t CDS \t {}\t {}\t . \t +\t 0\t .\n'.format(gene[0], gene[1]))
-	result_file.write('###  Match the start but not the end of a predicted gene\n')
-	for seq_name in anno_dict:
-		for gene in start_anno_dict[seq_name]:
-			result_file.write(seq_name+'\t ena\t CDS \t {}\t {}\t . \t +\t 0\t .\n'.format(gene[0], gene[1]))
-	result_file.write('###  Match the end but not the start of a predicted gene\n')
-	for seq_name in anno_dict:
-		for gene in end_anno_dict[seq_name]:
-			result_file.write(seq_name+'\t ena\t CDS \t {}\t {}\t . \t +\t 0\t .\n'.format(gene[0], gene[1]))
-	result_file.write('###  Do not match neither the start not the end of a predicted gene\n')
-	for seq_name in anno_dict:
-		for gene in neither_anno_dict[seq_name]:
-			result_file.write(seq_name+'\t ena\t CDS \t {}\t {}\t . \t +\t 0\t .\n'.format(gene[0], gene[1]))
-	result_file.close()
-
+				if name in neither:
+					neither[name].append(i)
+				else:
+					neither[name] = [i]
+				numneither+=1
+	
+	with open('fractionpred.gff3', 'a') as f:
+		print('STATISTICS FOR PREDICTED GENES: ', file = f)
+		print('\ttotal genes: ', numgenes, file = f)
+		print('\tperfect: {:.0%}'.format(numperfect/numgenes), file = f)
+		print('\tstart only: {:.0%}'.format(numstart/numgenes), file = f)
+		print('\tend only: {:.0%}'.format(numend/numgenes), file = f)
+		print('\tneither: {:.0%}'.format(numneither/numgenes), file = f)
+		print('The fraction of predicted genes on the positive strand that:', file = f)
+		print('###Perfectly match annotated gene###', file = f)
+		for name in names:
+			if name in perfect:
+				for i in perfect[name]:
+					print("%-20s %-5s %-5s %-5d %-5d %-5s %-5s %-5s %-5s" %(name, 'ena', 'CDS', i[0], i[1], '.', '+', '0', '.'), file = f)
+		print('###Start only matches annotated gene###', file = f)
+		for name in names:
+			if name in start:
+				for i in start[name]:
+					print("%-20s %-5s %-5s %-5d %-5d %-5s %-5s %-5s %-5s" %(name, 'ena', 'CDS', i[0], i[1], '.', '+', '0', '.'), file = f)
+		print('###End only matches annotated gene###', file = f)
+		for name in names:
+			if name in end:
+				for i in end[name]:
+					print("%-20s %-5s %-5s %-5d %-5d %-5s %-5s %-5s %-5s" %(name, 'ena', 'CDS', i[0], i[1], '.', '+', '0', '.'), file = f)
+		print('###No match for annotated gene###', file = f)
+		for name in names:
+			if name in neither:
+				for i in neither[name]:
+					print("%-20s %-5s %-5s %-5d %-5d %-5s %-5s %-5s %-5s" %(name, 'ena', 'CDS', i[0], i[1], '.', '+', '0', '.'), file = f)
+		print('###', file = f)
+	f.close()
+	
 def main(argv):
 	real = argv[0]
 	results = argv[1]
 	annodict, names = readreal(real)
 	mydict = readmyanno(results, names)
-	print(annodict)
-	compareannomy(annodict, mydict, names)
-	report_my_anno(annodict, mydict, names)
+	fractionanno(annodict, mydict, names)
+	fractionpred(annodict, mydict, names)
 
 if __name__ == '__main__':
 	# main(sys.argv[1:])
