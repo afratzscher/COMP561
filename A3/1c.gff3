@@ -1,61 +1,32 @@
 ###
-contig_32            ena   CDS   7     84    .     +     0    
-contig_32            ena   CDS   92    208   .     +     0    
-contig_32            ena   CDS   226   417   .     +     0    
-contig_32            ena   CDS   442   513   .     +     0    
-###
-contig_17            ena   CDS   14    91    .     +     0    
-contig_17            ena   CDS   99    215   .     +     0    
-contig_17            ena   CDS   233   250   .     +     0    
-contig_17            ena   CDS   259   273   .     +     0    
-contig_17            ena   CDS   292   294   .     +     0    
-###
-contig_52            ena   CDS   55    72    .     +     0    
-contig_52            ena   CDS   87    128   .     +     0    
-contig_52            ena   CDS   138   146   .     +     0    
-contig_52            ena   CDS   170   226   .     +     0    
-contig_52            ena   CDS   262   360   .     +     0    
-contig_52            ena   CDS   366   425   .     +     0    
-contig_52            ena   CDS   438   446   .     +     0    
-contig_52            ena   CDS   454   498   .     +     0    
-###
-contig_32            ena   CDS   7     84    .     +     0    
-contig_32            ena   CDS   92    208   .     +     0    
-contig_32            ena   CDS   226   417   .     +     0    
-contig_32            ena   CDS   442   513   .     +     0    
-###
-contig_32            ena   CDS   7     84    .     +     0    
-contig_32            ena   CDS   92    208   .     +     0    
-contig_32            ena   CDS   226   417   .     +     0    
-contig_32            ena   CDS   442   513   .     +     0    
-###
-contig_32            ena   CDS   7     84    .     +     0    
-contig_32            ena   CDS   92    208   .     +     0    
-contig_32            ena   CDS   226   417   .     +     0    
-contig_32            ena   CDS   442   513   .     +     0    
-###
-contig_32            ena   CDS   7     84    .     +     0    
-contig_32            ena   CDS   92    208   .     +     0    
-contig_32            ena   CDS   226   417   .     +     0    
-contig_32            ena   CDS   442   513   .     +     0    
-###
-contig_32            ena   CDS   7     84    .     +     0    
-contig_32            ena   CDS   92    208   .     +     0    
-contig_32            ena   CDS   226   417   .     +     0    
-contig_32            ena   CDS   442   513   .     +     0    
-###
-contig_32            ena   CDS   7     84    .     +     0    
-contig_32            ena   CDS   92    208   .     +     0    
-contig_32            ena   CDS   226   417   .     +     0    
-contig_32            ena   CDS   442   513   .     +     0    
-###
-contig_32            ena   CDS   7     84    .     +     0    
-contig_32            ena   CDS   92    208   .     +     0    
-contig_32            ena   CDS   226   417   .     +     0    
-contig_32            ena   CDS   442   513   .     +     0    
-###
-contig_17            ena   CDS   14    91    .     +     0    
-contig_17            ena   CDS   99    215   .     +     0    
-contig_17            ena   CDS   233   250   .     +     0    
-contig_17            ena   CDS   259   273   .     +     0    
-contig_17            ena   CDS   292   294   .     +     0    
+contig_32            ena   CDS   566   1327  .     +     0     .    
+contig_32            ena   CDS   1338  1838  .     +     0     .    
+contig_32            ena   CDS   1906  2256  .     +     0     .    
+contig_32            ena   CDS   2373  2549  .     +     0     .    
+contig_32            ena   CDS   5536  5712  .     +     0     .    
+contig_32            ena   CDS   6349  7083  .     +     0     .    
+contig_32            ena   CDS   7434  7907  .     +     0     .    
+contig_32            ena   CDS   8001  10157 .     +     0     .    
+contig_32            ena   CDS   10952 11410 .     +     0     .    
+contig_32            ena   CDS   17223 17993 .     +     0     .    
+contig_32            ena   CDS   18794 19291 .     +     0     .    
+contig_32            ena   CDS   19613 20533 .     +     0     .    
+contig_32            ena   CDS   20539 21489 .     +     0     .    
+contig_32            ena   CDS   21565 22488 .     +     0     .    
+contig_32            ena   CDS   22501 23247 .     +     0     .    
+contig_32            ena   CDS   23545 23649 .     +     0     .    
+contig_32            ena   CDS   23741 24982 .     +     0     .    
+contig_32            ena   CDS   25005 25871 .     +     0     .    
+contig_32            ena   CDS   26150 26884 .     +     0     .    
+contig_32            ena   CDS   26953 27519 .     +     0     .    
+contig_32            ena   CDS   27575 28480 .     +     0     .    
+contig_32            ena   CDS   28597 29238 .     +     0     .    
+contig_32            ena   CDS   29682 31112 .     +     0     .    
+contig_32            ena   CDS   31482 31883 .     +     0     .    
+contig_32            ena   CDS   34878 35969 .     +     0     .    
+contig_32            ena   CDS   37704 38936 .     +     0     .    
+contig_32            ena   CDS   39245 40060 .     +     0     .    
+contig_32            ena   CDS   41867 42133 .     +     0     .    
+contig_32            ena   CDS   46301 47362 .     +     0     .    
+contig_32            ena   CDS   47543 48235 .     +     0     .    
+contig_32            ena   CDS   48345 50015 .     +     0     .    

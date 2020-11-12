@@ -1,6 +1,8 @@
 import sys
 import config
 import numpy as np
+from math import inf
+from math import log
 
 def getconfigs(conf):
 	f = open(conf, 'r')
@@ -37,178 +39,128 @@ def getseq(seq):
 	return
 
 def getProbTables():
+	avgintprob = 1/ config.__AVGINTLEN__
+	avggenprob = 3/ config.__AVGGENELEN__
+	# config.__STARTCODON__ = ['ATG']
+
 	config.__INITPROB__ = {'I': 1, 'A': 0, 'G': 0, 'Z': 0} # given in instructions (A = start, Z = stop)
-	config.__TRANSPROB__ = {('I', 'I'): ((config.__AVGINTLEN__ - 1)/ config.__AVGINTLEN__), ('I', 'A'): (1/config.__AVGINTLEN__), ('I', 'G'): 0, ('I', 'Z'): 0,
+	config.__TRANSPROB__ = {('I', 'I'): 1-avgintprob, ('I', 'A'): avgintprob, ('I', 'G'): 0, ('I', 'Z'): 0,
 							('A', 'I'): 0, ('A', 'A'): 0, ('A', 'G'): 1, ('A', 'Z'): 0,
-							('G', 'I'): 0, ('G', 'A'): 0, ('G', 'G'): (((config.__AVGGENELEN__/3) - 1)/ (config.__AVGGENELEN__/3)), ('G', 'Z'): (1/ (config.__AVGGENELEN__/3)),
+							('G', 'I'): 0, ('G', 'A'): 0, ('G', 'G'): 1-avggenprob, ('G', 'Z'): avggenprob,
 							('Z', 'I'): 1, ('Z', 'A'): 0, ('Z', 'G'): 0, ('Z', 'Z'): 0}
 	#EMISSION probabilities
-	config.__INTEREMIT__ = {k: v/ sum(config.__NTFREQ__.values()) for k,v in config.__NTFREQ__.items()} 
-	
+	interemit = {k: v/ sum(config.__NTFREQ__.values()) for k,v in config.__NTFREQ__.items()} 
+
 	#find frequencies of start codons
-	config.__STARTEMIT__ = {k: 0 for k in config.__CODONFREQ__.keys()}
+	startemit = {k: 0 for k in config.__CODONFREQ__.keys()}
 	startfreq = sum(config.__CODONFREQ__[i] for i in config.__STARTCODON__)
 	for i in config.__STARTCODON__:
-		config.__STARTEMIT__[i] = config.__CODONFREQ__[i]/startfreq 
-
-	config.__GENEEMIT__ = {k: v/ sum(config.__CODONFREQ__.values()) for k,v in config.__CODONFREQ__.items()}
+		startemit[i] = config.__CODONFREQ__[i]/startfreq 
 	
 	# find frequencies of stop codons
-	config.__STOPEMIT__ = {k: 0 for k in config.__CODONFREQ__.keys()}
+	stopemit = {k: 0 for k in config.__CODONFREQ__.keys()}
 	stopfreq = sum(config.__CODONFREQ__[i] for i in config.__STOPCODONS__)
 	for i in config.__STOPCODONS__:
-		config.__STOPEMIT__[i] = config.__CODONFREQ__[i]/stopfreq 
+		stopemit[i] = config.__CODONFREQ__[i]/stopfreq
+		# stopemit[i] = 1/3
+
+	config.__CODONFREQ__['TAA'] = 0
+	config.__CODONFREQ__['TAG'] = 0
+	config.__CODONFREQ__['TGA'] = 0
+	geneemit = {k: v/ sum(config.__CODONFREQ__.values()) for k,v in config.__CODONFREQ__.items()}
+
+	config.__EMITPROB__ = {'I': interemit, 'A': startemit, 'G': geneemit, 'Z': stopemit}
 	return
 
-def viterbi(iter):
-	seq = config.__SEQ__[iter]
-	seq = ' ' + seq
+def viterbi(it):
+	if not (config.__SEQ__.get(it)):
+		return
+	seq = config.__SEQ__[it]
+	initprob = config.__INITPROB__
+	emitprob = config.__EMITPROB__
+	transprob = config.__TRANSPROB__
+	take = False
+	codflag = 1
+	currprob = {'I': emitprob['I'][seq[0]], 'A': -inf, 'G': -inf, 'Z': -inf} 
+	path = [{'I': 'I','A': 'I','G': 'I','Z': 'I'}]
 	states = ['I', 'A', 'G', 'Z']
-	tb = np.zeros((4, len(seq)))
-	pointer = np.zeros((4, len(seq)), dtype=np.dtype('U4'))
-	
-	#initialize
-	tb[0,0] = config.__INITPROB__['I'] 
-	pointer[0,0] = 'E'
 
-	codon = False
-	stop = False
-	end = False
-	i = 1
-	prev = 'I'
-	while i < len(seq):
-		if seq[i:i+3] != '':
-			for k in range(0, len(states)):
-				curr = states[k]
-				if seq[i:i+3] in config.__STARTCODON__:
-					codon = True
-				if seq[i:i+3] in config.__STOPCODONS__ and (codon):
-					stop = True
-				probtb = {'I': 0, 'A': 0, 'G': 0, 'Z': 0}
-				for j in range(0, len(states)):
-					prevstate = states[j]
-					if curr == 'I':
-						emitprob = config.__INTEREMIT__
-					elif curr == 'G':
-						emitprob = config.__GENEEMIT__
-					elif curr == 'A':
-						emitprob = config.__STARTEMIT__
-					elif curr == 'Z':
-						emitprob = config.__STOPEMIT__
-					if codon:
-						if curr == 'I':
-							prob = 0
-						else:
-							if stop:
-								if curr == 'G':
-									prob = 0
-								else:
-									prob = tb[j,i-1] * emitprob[seq[i:i+3]] * config.__TRANSPROB__[(prevstate, curr)]
-							else:
-								if (len(seq[i:i+3]) == 3):
-									prob = tb[j,i-1] * emitprob[seq[i:i+3]] * config.__TRANSPROB__[(prevstate, curr)]
-								else:
-									end = True
+	for i in range(1, len(seq)-2):
+		last_prob = currprob.copy()
+		currpath = {}
+
+		if take:
+			codflag += 1
+			if codflag > 3:
+				codflag = 1
+		if (not take) or codflag==1:
+			codon = seq[i:i+3]
+			codflag = 1
+			if emitprob['A'][codon]>0:
+				take = True
+
+		for curr in states:
+			prob_list = {}
+			if curr == 'I':
+				for prev in states:
+					if transprob[(prev,'I')]>0 and emitprob['I'][seq[i]]>0:
+						prob_list[prev] = last_prob[prev] + log(transprob[(prev,'I')]) + log(emitprob['I'][seq[i]])
 					else:
-						if curr == 'I':
-							prob = tb[j,i-1] * emitprob[seq[i]] * config.__TRANSPROB__[(prevstate, curr)]
-						else:
-							if (len(seq[i:i+3]) == 3):
-									prob = tb[j,i-1] * emitprob[seq[i:i+3]] * config.__TRANSPROB__[(prevstate, curr)]
+						prob_list[prev] = -inf
+				currprob['I'] = max(prob_list.values())
+				currpath['I'] = max(prob_list, key = prob_list.get)
+		
+		
+			if curr=='A' or curr=='G' or curr=='Z':
+				if take == True:
+					if codflag==1:
+						for prev in initprob:
+							if transprob[(prev,curr)]>0 and emitprob[curr][codon]>0:
+								prob_list[prev] = last_prob[prev] + log(transprob[(prev,curr)]) + log(emitprob[curr][codon])
 							else:
-								end = True
+								prob_list[prev] = -inf
 
-					if prob > probtb[curr]:
-						probtb[curr] = prob
-
-				maxst = max(probtb, key=probtb.get)
-				if max(probtb.values()) == 0:
-					maxst = ''
-				if codon:
-					if end:
-						pointer[2, i:i+3] = 'G'
-					if i == len(seq)-1:
-						pointer[2, i:i+3] = 'G'
-					if maxst != '':
-						pointer[k, i] = prev
-						pointer[k, i+1:i+3] = maxst
-						prev = maxst
-					tb[k, i:i+3] = probtb[curr]
-
+						currprob[curr] = max(prob_list.values())
+						currpath[curr] = max(prob_list, key = prob_list.get)
+						
+					elif codflag==2 or codflag==3:
+						currpath[curr] = curr
 				else:
-					if end:
-						pointer[2, i:i+3] = 'G'
-					tb[k, i] = probtb[curr]
-					if maxst != '':
-						pointer[k, i] = prev
-						prev = maxst
+					currprob[curr] = -inf
+		if emitprob['Z'][codon]>0 and codflag==3:
+			take = False
+		path.append(currpath)
 
-		if codon:
-			i+=3
-			if stop:
-				stop = False
-				codon = False
-		else:
-			i+=1
-	
-	assignment = traceback(tb, iter, pointer)
+	traceback(path, currprob, it)
 
-def traceback(tb, iter, pointer):
-	states = ['I', 'A', 'G', 'Z']
-	indices = np.argwhere(tb[:,-1] == np.amax(tb[:,-1])).flatten().tolist()
-	check = False
-	for idx in indices:
-		if pointer[idx,-1] == '':
-			idx +=1
-		else:
-			path = ''
-			i = tb.shape[1] - 1
-			while i >= 0:
-				path += states[idx]
-				curr = pointer[idx, i]
-				if curr == 'I':
-					idx = 0
-				elif curr == 'A':
-					idx = 1
-				elif curr == 'G':
-					idx = 2
-				elif curr == 'Z':
-					idx = 3
-				i-=1
-			path = (path[::-1])[1:]
-			break
-
-	i = 0
-	pts = []
-
-	while i < len(path):
-		if path[i] != 'I':
-			start = i
-			while path[i] != 0 and (i < len(path)-1):
-				i+=1
-			pts.append((start, i-1))
-			i+=1
-		else:
-			i+=1
-
-	idx = np.argmax(tb, axis = 0)
+def traceback(path, currprob, it):
+	states = ''
+	curr = max(currprob, key = currprob.get)
+	for i in range(0, len(path)):
+		idx = len(path) - i - 1
+		states = path[idx][curr] + states
+		curr = path[idx][curr]
+	states = states[1:]
 	i = 0
 	start = 0
 	pts = [] # DONT subtract 1 because idx 0 is empty
-	while i < len(idx):
-		if idx[i] != 0:
+	
+	while i < len(states)-1:
+		if states[i] != 'I':
 			start = i
-			while idx[i] != 0 and (i < len(idx)-1):
+			while (states[i] != 'I') and (i < len(states)-1):
 				i+=1
 			pts.append((start, i-1))
-			i+=1
-		else:
-			i+=1
+		i+=1
+	if states[len(states)-1] != 'I':
+		point = pts[-1]
+		pts.pop()
+		pts.append((point[0], point[1]+1))
 
 	with open('1c.gff3', 'a') as f:
 		print('###', file = f)
 		for i in pts:
-			print("%-20s %-5s %-5s %-5d %-5d %-5s %-5s %-5s" %(config.__NAMES__[iter-1], 'ena', 'CDS', i[0], i[1], '.', '+', '0'), file = f)
+			print("%-20s %-5s %-5s %-5d %-5d %-5s %-5s %-5s %-5s" %(config.__NAMES__[it-1], 'ena', 'CDS', i[0]+1, i[1]+1, '.', '+', '0', '.'), file = f)
 	f.close()
 
 def main(argv):
@@ -221,7 +173,7 @@ def main(argv):
 	for i in range(1, len(config.__SEQ__)+1):
 		viterbi(i)
 		print('end iter ', i)
-		
+		break
 
 if __name__ == '__main__':
 	# main(sys.argv[1:])

@@ -1,121 +1,23 @@
+
 import argparse
 from math import inf
 from math import log
 
+def argument_parse():
+	ap = argparse.ArgumentParser()
+	ap.add_argument('sequence_file')
+	ap.add_argument('config_file')
+	args = vars(ap.parse_args())
+	sequence_file_name = args['sequence_file']
+	config_file_name = args['config_file']
+	print('Sequence file name:', sequence_file_name)
+	print('config file name:', config_file_name)
+	return sequence_file_name, config_file_name
 
-def read_config_anno():
-	#open and read the annotation file
-	anno_file = open('Vibrio_cholerae.GFC_11.37.gff3','r')
-	anno_data = anno_file.readlines()
 
-	#calculate the overall length of all sequences
-	seq_length_sum = 0
-	seq_length_dict = {}
-	for i in range(1,152):
-		line = anno_data[i].strip().split()
-		seq_length_sum += int(line[3])
-		seq_length_dict[i] = int(line[3])
-
-	#dict store all anno data, eg.{1:[(s,e),(s,e),(s,e),(s,e)],2:[(s,e),(s,e),(s,e)]}
-	anno_dict = {}
-	seq_index = 1
-	line_index = 158
-
-	while seq_index<=151 and line_index<len(anno_data):
-
-		#handle the 151-th seq annotation
-		if line_index+2>=len(anno_data):
-			anno_dict[seq_index] = current_seq
-			break
-
-		current_seq = []
-		#loop within the same seq
-		while not (anno_data[line_index].startswith('###') and anno_data[line_index+2].startswith('###')):
-			#if at the beginning of current segment, record the data
-			current_line = anno_data[line_index].split()
-			if anno_data[line_index-1].startswith('###') and current_line[6] == '+':
-				segment = (int(current_line[3]), int(current_line[4]))
-				current_seq.append(segment)
-			line_index += 1
-		anno_dict[seq_index] = current_seq
-		seq_index += 1
-		line_index += 2
-
-	seg_count = 0 
-	for anno in anno_dict:
-		seg_count += len(anno_dict[anno])
-
-	return anno_dict, seq_length_sum, seg_count
-
-def read_config_seq():
-	#open and read the sequence file
-	seq_file = open('Vibrio_cholerae.GFC_11.dna.nonchromosomal.fa','r')
-	seq_data = seq_file.readlines()
-
-	seq_index = 1
-	line_index = 1 #start from the 2nd line
-	
-	#dict store all anno data, eg.{1:'CATGGAAGTA,2:'ACATA'}
-	seq_dict = {}
-
-	while seq_index<=151:
-		current_seq = ''
-		while not (line_index>=len(seq_data) or seq_data[line_index].startswith('>')):
-			current_seq += seq_data[line_index].strip()
-			line_index +=1 
-		seq_dict[seq_index] = current_seq
-		seq_index += 1
-		line_index += 1
-	return seq_dict
-
-def write_config():
-	#calculate average intergenic and gene region length
-	inter_length_sum = 0
-	inter_number_sum = 0
-	gene_length_sum = 0
-	gene_number_sum = 0
-	inter_nuc_dict = {'A':0, 'C':0, 'G':0, 'T':0}
-	gene_codon_dict = {}
-
-	for seq_index in anno_dict:
-		inter_start_index = 0
-		for seg in anno_dict[seq_index]:
-			#count intergenic area
-			for i in seq_dict[seq_index][inter_start_index:seg[0]-1]:
-				inter_nuc_dict[i] += 1
-			inter_start_index = seg[1]
-
-			#count gene area
-			for i in range(seg[0]-1, seg[1], 3):
-				if seq_dict[seq_index][i:i+3] in gene_codon_dict:
-					gene_codon_dict[seq_dict[seq_index][i:i+3]] += 1
-				else:
-					gene_codon_dict[seq_dict[seq_index][i:i+3]] = 1
-
-			#calculate length
-			gene_length_sum += seg[1] - seg[0]
-			gene_number_sum += 1
-			inter_number_sum += 1
-
-		for i in seq_dict[seq_index][inter_start_index:]:
-			inter_nuc_dict[i] += 1
-		inter_number_sum += 1
-
-	inter_length_sum = seq_length_sum - gene_length_sum
-
-	inter_length_avg = inter_length_sum / inter_number_sum
-	gene_length_avg = gene_length_sum / gene_number_sum
-	
-	#write info: inter_length_avg, gene_length_avg, inter_nuc_dict, gene_codon_dict
-	config_file = open(config_file_name, "w")
-	config_file.write(str(inter_length_avg) + '\n')
-	config_file.write(str(gene_length_avg) + '\n')
-	config_file.write(str(inter_nuc_dict) + '\n')
-	config_file.write(str(gene_codon_dict) + '\n')
-	config_file.close()
-
-def read_config(conf):
-	config_file = open(conf, "r")
+def read_config():
+	config_file_name  = 'configuration.txt'
+	config_file = open(config_file_name, "r")
 	config = config_file.readlines()
 	inter_length_avg = float(config[0].strip())
 	gene_length_avg = float(config[1].strip())
@@ -141,8 +43,9 @@ def read_config(conf):
 		gene_codon_prob[gene] = gene_codon_dict[gene] / gene_length
 	return i_to_s_prob, m_to_t_prob, inter_nuc_prob, gene_codon_prob
 
-def read_seq(name):
-	seq_file = open(name, "r")
+def read_seq():
+	sequence_file_name = 'Vibrio_vulnificus.ASM74310v1.dna.toplevel.fa'
+	seq_file = open(sequence_file_name, "r")
 	lines = seq_file.readlines()
 	seq = ''
 	seq_list = []
@@ -159,7 +62,7 @@ def read_seq(name):
 	seq_list.append(seq)
 	return seq_list, seq_name_list
 
-def initialize(i_to_s_prob, m_to_t_prob, inter_nuc_prob, gene_codon_prob):
+def initialize():
 	initial_prob = {'I':1, 'S':0, 'M':0, 'T':0}
 	transition_prob = {('I','I'): 1-i_to_s_prob, ('I','S'):i_to_s_prob, ('I','M'):0, ('I','T'):0,
 				('S','I'):0, ('S','S'):0, ('S','M'):1, ('S','T'):0,
@@ -190,11 +93,10 @@ def initialize(i_to_s_prob, m_to_t_prob, inter_nuc_prob, gene_codon_prob):
 		else:
 			t_emission_prob[t] = 0
 	emission_prob = {'I':i_emission_prob, 'S':s_emission_prob, 'M':m_emission_prob, 'T':t_emission_prob}
-
+	print(initial_prob, transition_prob, emission_prob)
 	return initial_prob, transition_prob, emission_prob
 
-def viterbi(seq, initial_prob, transition_prob, emission_prob):
-	seq = 'ACATGACGGGATAGGTTGAAATTAGGACGTGGATTGAACT'
+def viterbi(seq):
 	take_codon = False
 	codon_flag = 1
 	current_prob = {'I':emission_prob['I'][seq[0]], 'S':-inf, 'M':-inf, 'T':-inf} 
@@ -248,7 +150,7 @@ def viterbi(seq, initial_prob, transition_prob, emission_prob):
 
 	return path_trellis, current_prob
 
-def trace_back(seq_name, current_prob, path_trellis, result_file):
+def trace_back(seq_name):
 	state_seq = ''
 	curr_state = max(current_prob, key = current_prob.get)
 	for i in range(len(path_trellis)):
@@ -271,21 +173,17 @@ def trace_back(seq_name, current_prob, path_trellis, result_file):
 	if end_index==0:
 		result_file.write(seq_name+'\t ena\t CDS \t .\t .\t . \t +\t 0\t .\n')
 
-def main(argv):
-	seq = argv[0]
-	conf = argv[1]
-	i_to_s_prob, m_to_t_prob, inter_nuc_prob, gene_codon_prob = read_config(conf)
-	seq_list, seq_name_list = read_seq(seq)
-	initial_prob, transition_prob, emission_prob = initialize(i_to_s_prob, m_to_t_prob, inter_nuc_prob, gene_codon_prob)
+if __name__=="__main__":
+	#usage: python predict.py Vibrio_vulnificus.ASM74310v1.dna.nonchromosomal.fa config.txt
+	i_to_s_prob, m_to_t_prob, inter_nuc_prob, gene_codon_prob = read_config()
+	seq_list, seq_name_list = read_seq()
+	initial_prob, transition_prob, emission_prob = initialize()
 	result_file = open('result.gff3', 'w')
 	print('{} sequences in total'.format(len(seq_list)))
 	for i in range(len(seq_list)):
 		print('searching {}-th sequence'.format(i))
-		path_trellis, current_prob = viterbi(seq_list[i], initial_prob, transition_prob, emission_prob)
-		trace_back(seq_name_list[i], current_prob, path_trellis, result_file)
+		path_trellis, current_prob = viterbi(seq_list[i])
+		trace_back(seq_name_list[i])
 		break
 	result_file.write('###\n')
 	result_file.close()
-
-if __name__=="__main__":
-	main(['Vibrio_cholerae.GFC_11.dna.toplevel.fa', 'configuration.txt'])
