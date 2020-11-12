@@ -1,0 +1,107 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from statistics import mean
+
+def main():
+	dct = {'ATG': 0.025995447497773234, 'AAT': 0.01900174842476825, 'GCG': 0.025434632006070004, 'TTC': 0.014053376439151518, 'AAA': 0.0351334410978788, 'TTA': 0.01735229109622934, 'GTA': 0.011249298980635371, 'CAT': 0.013360604361165178, 'TCT': 0.012964734602315838, 'AAG': 0.01553788803483654, 'ATT': 0.02919539471513872, 'AAC': 0.022102728202421405, 'TTT': 0.025137729686932998, 'TTG': 0.02121202124501039, 'TCG': 0.009731798238379573, 'TCC': 0.005872068089598522, 'ATC': 0.026160393230627122, 'GGT': 0.027084089334608912, 'TGG': 0.014482235344571636, 'GAC': 0.014086365585722297, 'CAA': 0.03015207996569129, 'GCC': 0.01830897634678191, 'GTC': 0.014119354732293076, 'CCC': 0.00554217662389074, 'AGT': 0.01184310361890938, 'GGC': 0.02292745686669086, 'GCT': 0.021014086365585723, 'GAA': 0.038300399168673505, 'CGC': 0.01606571437996899, 'GAG': 0.023422294065252532, 'CTT': 0.01382245241315607, 'GTG': 0.024675881634942103, 'CTA': 0.009137993600105565, 'ACC': 0.018770824398772805, 'CAG': 0.016857453897667667, 'CCA': 0.013723484973443736, 'CTG': 0.0258964800580609, 'GAT': 0.03615610464157292, 'GCA': 0.020750173193019496, 'ACG': 0.01088641836835681, 'CTC': 0.013096691188598951, 'GTT': 0.01919968330419292, 'CCT': 0.01108435324778148, 'TGT': 0.007983373470128327, 'CAC': 0.010985385808069145, 'CGT': 0.019661531356183815, 'AGC': 0.013987398146009963, 'ACA': 0.008940058720680896, 'ACT': 0.014317289611717745, 'GGG': 0.008907069574110117, 'TAC': 0.015076039982845645, 'TAT': 0.01751723682908323, 'CCG': 0.010556526902649029, 'CGA': 0.006300926995018639, 'TCA': 0.012436908257183387, 'CGG': 0.003397882096790156, 'ATA': 0.005212285158182958,  'GGA': 0.00943489591924257, 'TGC': 0.006630818460726421, 'AGA': 0.005674133210173853, 'AGG': 0.0020783162339590277}
+
+	values = list(dct.values())
+	# plt.hist(values)
+	# plt.savefig('histo.png')
+
+	count = 0
+	_sum = 0
+	for key in dct:
+	    count += 1
+	    _sum += dct[key]
+	print('this is the mean: ', _sum/count)
+	count = 0
+	lessstart = []
+	morestart = []
+	# lessstart = {'A':0, 'T':0, 'C':0, 'G':0}
+	# morestart = {'A':0, 'T':0, 'C':0, 'G':0}
+	for key in dct:
+	    if dct[key] < 0.007:
+	    	lessstart.append(key)
+	    	print(key)
+	    if dct[key] > 0.03:
+	    	morestart.append(key)
+	print('LESS ', lessstart)
+	print('MORE ', morestart)
+
+	seqA = 'GTGCGTGACCGCATCAAAGCGGTATTACTTGCGTCTGAAGGTTGGAGTCAGGCGATGATTTCTCAAGCTCTTCGCATTCACGAATCGACTGTTGCA'
+	less = 0
+	more = 0
+	i = 0
+	while i < len(seqA)-3:
+		if seqA[i:i+3] in lessstart:
+			less +=1
+			print(i)
+		if seqA[i:i+3] in morestart:
+			more+=1
+		i+=3
+	print(less, more)
+
+	seqB = 'GTGAACGATGCGCTGTGCGGTTTCGGGATCATCGCGATAGGTTGCAACAAAATTGCTGTGCTCATCCGCATGATCTTGGACAAACACGCTCAATAA'
+	less = 0
+	more = 0
+	i = 0
+	while i < len(seqB)-3:
+		if seqB[i:i+3] in lessstart:
+			less +=1
+			print(i)
+		if seqB[i:i+3] in morestart:
+			more+=1
+		i+=3
+	print(less, more)
+
+	seqC = 'TTGATCATTGATGGTCTTGAAATCATCGATATCAAACAAAATCAGGGCAAAGTTTCCTGA'
+	less = 0
+	more = 0
+	i = 0
+	while i < len(seqC)-3:
+		if seqC[i:i+3] in lessstart:
+			less +=1
+			print(i)
+		if seqC[i:i+3] in morestart:
+			more+=1
+		i+=3
+	print(less, more)
+
+	# seqA = 'ATGGCAACTATCAAAGTAACACAAACTAAAAGCTCAATTGGTCGTCTACCTAAGCACAAAGCTACACTTCGTGGTTTAGGTCTTCGTCGTATCAACCACACAGTAGAACTTGAAGATACTCCGTGCATTCGCGGTATGATCAACAAGGTTTACTACATGGTTAAAGTTGAGGAGTAA'
+	# less = 0
+	# more = 0
+	# i = 0
+	# lstA = []
+	# while i < len(seqA)-3:
+	# 	lstA.append(dct[seqA[i:i+3]])
+	# 	i+=3
+	# plt.hist(lstA)
+	# plt.savefig('seqA.png')
+	# print(mean(lstA))
+
+	# seqB = 'ATGAAAGTTCGTGCTTCCGTTAAAAAAATCTGCCGTAACTGTAAAGTAATCAAGCGTAACGGTGTAGTTCGCGTGATTTGCAGTGAGCCAAAGCACAAGCAGCGCCAAGGCTAA'
+	# less = 0
+	# more = 0
+	# i = 0
+	# lstB = []
+	# while i < len(seqB)-3:
+	# 	lstB.append(dct[seqB[i:i+3]])
+	# 	i+=3
+	# plt.hist(lstB)
+	# plt.savefig('seqB.png')
+	# print(mean(lstB))
+
+	# seqC = 'ATGGTTGATGTCGTACAAGGTGACGCCGAATTCCTGACAGTTTTTAATCAGGGTTTCCATCTGAATACGGGCCATTTCACCAGACGCATTTATGTCTTTGGTGGTGGTGGATACGTTATGATCCATGGTCGCGAACGTTTTGCTCACTTGACGCACTTGGCGCCCCTTTTCACGTAA'
+	# i = 0
+	# lstC = []
+	# while i < len(seqC)-3:
+	# 	lstC.append(dct[seqC[i:i+3]])
+	# 	i+=3
+	# plt.hist(lstC)
+	# plt.savefig('seqC.png')
+	# print(mean(lstC))
+
+
+if __name__ == '__main__':
+	main()

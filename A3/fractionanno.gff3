@@ -4,7 +4,7 @@ STATISTICS FOR ANNOTATED GENES:
 	start only: 3%
 	end only: 48%
 	neither: 13%
-The fraction of annotated genes on the positive strand that:
+The list of annotated genes on the positive strand that:
 ###Perfectly match predicted gene###
 contig_1             ena   CDS   10952 11410 .     +     0     .    
 contig_1             ena   CDS   20539 21489 .     +     0     .    

@@ -38,7 +38,6 @@ def getseq(seq):
 def getProbTables():
 	avgintprob = 1/ config.__AVGINTLEN__
 	avggenprob = 3/ config.__AVGGENELEN__
-	# config.__STARTCODON__ = ['ATG']
 
 	config.__INITPROB__ = {'I': 1, 'A': 0, 'G': 0, 'Z': 0} # given in instructions (A = start, Z = stop)
 	config.__TRANSPROB__ = {('I', 'I'): 1-avgintprob, ('I', 'A'): avgintprob, ('I', 'G'): 0, ('I', 'Z'): 0,
@@ -168,8 +167,7 @@ def main(argv):
 	getProbTables()
 	for i in range(len(config.__SEQ__)):
 		viterbi(i)
-		print('end iter ', i)
 
 if __name__ == '__main__':
-	# main(sys.argv[1:])
-	main(['Vibrio_vulnificus.ASM74310v1.dna.toplevel.fa', 'configuration.txt'])
+	main(sys.argv[1:])
+	# main(['Vibrio_vulnificus.ASM74310v1.dna.toplevel.fa', 'configuration.txt'])

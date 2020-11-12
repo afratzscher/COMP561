@@ -4,7 +4,7 @@ STATISTICS FOR PREDICTED GENES:
 	start only: 2%
 	end only: 39%
 	neither: 30%
-The fraction of predicted genes on the positive strand that:
+The list of predicted genes on the positive strand that:
 ###Perfectly match annotated gene###
 contig_1             ena   CDS   10952 11410 .     +     0     .    
 contig_1             ena   CDS   20539 21489 .     +     0     .    

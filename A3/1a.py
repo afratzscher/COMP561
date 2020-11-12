@@ -158,6 +158,5 @@ def main(argv):
 	freq(annodict, seqdict, lengthdict)
 
 if __name__ == '__main__':
-	# main(sys.argv[1:])
-	main(['Vibrio_cholerae.GFC_11.37.gff3', 'Vibrio_cholerae.GFC_11.dna.toplevel.fa'])
-	# main(['test3.gff3', 'Vibrio_cholerae.GFC_11.dna.toplevel.fa'])
+	main(sys.argv[1:])
+	# main(['Vibrio_cholerae.GFC_11.37.gff3', 'Vibrio_cholerae.GFC_11.dna.toplevel.fa'])

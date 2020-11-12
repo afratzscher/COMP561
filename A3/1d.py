@@ -109,14 +109,14 @@ def fractionanno(annodict, mydict, names):
 					neither[name] = [i]
 				numneither+=1
 	
-	with open('fractionanno.gff3', 'a') as f:
+	with open('fractionanno.gff3', 'w') as f:
 		print('STATISTICS FOR ANNOTATED GENES: ', file = f)
 		print('\ttotal genes: ', numgenes, file = f)
 		print('\tperfect: {:.0%}'.format(numperfect/numgenes), file = f)
 		print('\tstart only: {:.0%}'.format(numstart/numgenes), file = f)
 		print('\tend only: {:.0%}'.format(numend/numgenes), file = f)
 		print('\tneither: {:.0%}'.format(numneither/numgenes), file = f)
-		print('The fraction of annotated genes on the positive strand that:', file = f)
+		print('The list of annotated genes on the positive strand that:', file = f)
 		print('###Perfectly match predicted gene###', file = f)
 		for name in names:
 			if name in perfect:
@@ -179,14 +179,14 @@ def fractionpred(annodict, mydict, names):
 					neither[name] = [i]
 				numneither+=1
 	
-	with open('fractionpred.gff3', 'a') as f:
+	with open('fractionpred.gff3', 'w') as f:
 		print('STATISTICS FOR PREDICTED GENES: ', file = f)
 		print('\ttotal genes: ', numgenes, file = f)
 		print('\tperfect: {:.0%}'.format(numperfect/numgenes), file = f)
 		print('\tstart only: {:.0%}'.format(numstart/numgenes), file = f)
 		print('\tend only: {:.0%}'.format(numend/numgenes), file = f)
 		print('\tneither: {:.0%}'.format(numneither/numgenes), file = f)
-		print('The fraction of predicted genes on the positive strand that:', file = f)
+		print('The list of predicted genes on the positive strand that:', file = f)
 		print('###Perfectly match annotated gene###', file = f)
 		for name in names:
 			if name in perfect:
@@ -219,5 +219,5 @@ def main(argv):
 	fractionpred(annodict, mydict, names)
 
 if __name__ == '__main__':
-	# main(sys.argv[1:])
-	main(['Vibrio_vulnificus.ASM74310v1.37.gff3', '1c.gff3'])
+	main(sys.argv[1:])
+	# main(['Vibrio_vulnificus.ASM74310v1.37.gff3', '1c.gff3'])
