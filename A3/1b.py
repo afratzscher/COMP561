@@ -20,21 +20,20 @@ def getseq(seq):
 	lines = seqfile.readlines()
 
 
-	num = 0
 	seqdict = {}
-	idx = 0
+	idx = -1
 	for line in lines:
 		if ">" in line:
 			data = line.strip().split()
-			# num = int(data[0][12:].lstrip("0"))
-			num = int(data[0][8:].lstrip("0"))
+			# num = int(data[0][8:].lstrip("0"))
 			config.__NAMES__.append(data[0][1:])
+			idx+=1
 		else:
 			data = line.strip('\n')
-			if num in seqdict:
-				seqdict[num] = seqdict[num] + data
+			if idx in seqdict:
+				seqdict[idx] = seqdict[idx] + data
 			else:
-				seqdict[num] = data
+				seqdict[idx] = data
 	config.__SEQ__ = seqdict
 	return
 
@@ -169,7 +168,6 @@ def main(argv):
 	getconfigs(conf)
 	getseq(seq)
 	getProbTables()
-
 	for i in range(1, len(config.__SEQ__)+1):
 		viterbi(i)
 		print('end iter ', i)

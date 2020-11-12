@@ -60,6 +60,8 @@ def read_seq():
 		else:
 			seq += lines[i].strip()
 	seq_list.append(seq)
+	print(seq)
+
 	return seq_list, seq_name_list
 
 def initialize():
@@ -93,7 +95,6 @@ def initialize():
 		else:
 			t_emission_prob[t] = 0
 	emission_prob = {'I':i_emission_prob, 'S':s_emission_prob, 'M':m_emission_prob, 'T':t_emission_prob}
-	print(initial_prob, transition_prob, emission_prob)
 	return initial_prob, transition_prob, emission_prob
 
 def viterbi(seq):

@@ -43,8 +43,7 @@ def myread_seq():
 def main():
 	my = myread_seq()
 	other = read_seq()
-	print(my[100])
-	print(other[100])
+	print(other[0])
 	print(my[100] == other[100])
 	shared_items = {k: my[k] for k in my if k in other and my[k] == other[k]}
 	print(len(shared_items))
